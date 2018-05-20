@@ -366,10 +366,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void writeToExcelClassErrorRow(String exce)
     {
-        constantsRemaining.remove(constantForClassTest);
+        /*constantsRemaining.remove(constantForClassTest);
         saveConstantsToGoSharePrefs();
         constantForClassTest = constantsRemaining.get(0);
-        saveCurrentConstant();
+        saveCurrentConstant();*/
         if (testWriter == null)
             testWriter = new ConstantExcelWriter();
         if (!checkPermission()) {
@@ -400,14 +400,16 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Class not found for "+constantForClassTest,Toast.LENGTH_LONG).show();
             writeToExcelClassErrorRow(e.getMessage());
-            throw new ClassCastException(e.getMessage());
+            //throw new ClassCastException(e.getMessage());
+            return;
         }
         catch (NullPointerException e)
         {
             e.printStackTrace();
             Toast.makeText(this, "Null variable ",Toast.LENGTH_LONG).show();
             writeToExcelClassErrorRow(e.getMessage());
-            throw new NullPointerException(e.getMessage());
+            //throw new NullPointerException(e.getMessage());
+            return;
         }
         Method[] checkMethods = classToInvestigate.getDeclaredMethods();//Inherited methods are excluded
         //methods = new ArrayList<>(); updated by the method
