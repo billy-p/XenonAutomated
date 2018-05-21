@@ -655,7 +655,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void populateConstantSpinner()
     {
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getApplicationContext(),R.layout.support_simple_spinner_dropdown_item,allConstants);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getApplicationContext(),R.layout.my_simple_spinner_dropdown_item,allConstants);
 // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
         prograssBar.setVisibility(View.INVISIBLE);
