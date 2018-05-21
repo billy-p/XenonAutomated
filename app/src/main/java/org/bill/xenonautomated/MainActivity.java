@@ -116,6 +116,10 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                     Log.i(TAG,"------------------------ERROR ClassNotFoundException-----------------------------");
                     Toast.makeText(getApplicationContext(), "Error: ClassNotFoundException: " + e.getMessage(),Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.i(TAG,"------------------------ERROR Exception-----------------------------");
+                    Toast.makeText(getApplicationContext(), "Error: Exception: " + e.getMessage(),Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -139,6 +143,10 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                     Log.i(TAG,"...........Error: ClassNotFoundException...............");
                     Toast.makeText(getApplicationContext(), "Error: ClassNotFoundException: " + e.getMessage(),Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.i(TAG,"...........Error: Exception...............");
+                    Toast.makeText(getApplicationContext(), "Error: Exception: " + e.getMessage(),Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -168,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     editor.remove("currentConstant");
                     editor.apply();
                 }
-                resume.setText("EXECUTE ALL");
+                resume.setText("EXECUTE ALL CLASSES");
                 resume.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
                 Log.i(TAG,"Cleared DATA successfully.");
                 Toast.makeText(getApplicationContext(), "Cleared DATA successfully",Toast.LENGTH_LONG).show();
@@ -381,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
         testWriter.writeRowToFile(tempList,true);
     }
     /*Reflection method for testing sdk*/
-    private void useReflection(boolean executeAll) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+    private void useReflection(boolean executeAll) throws Exception {
         Object varClass;
         String minStringValue = "a";
         Integer minIntegerValue = Integer.MIN_VALUE;
@@ -414,11 +422,11 @@ public class MainActivity extends AppCompatActivity {
         Method[] checkMethods = classToInvestigate.getDeclaredMethods();//Inherited methods are excluded
         //methods = new ArrayList<>(); updated by the method
         List<Method> allMethodsNeeded;
-
+        boolean methodListEmptyInitially = emptyMethodsToGo();
         /////FOR THE WHOLE CLASS: iterate methods to take info////////
         if (executeAll)
         {
-            if(emptyMethodsToGo()) {
+            if(methodListEmptyInitially) {
                 allMethodsNeeded = loadMethodsNotExecutedYet(checkMethods, true);
                 saveMethodsToGoSharePrefs();
             }
@@ -430,13 +438,21 @@ public class MainActivity extends AppCompatActivity {
             allMethodsNeeded = loadMethodsNotExecutedYet(checkMethods,false);
         }
         Log.i(TAG,"Found: "+ allMethodsNeeded.size() + " methods with String/int params.");
-        /////////write whole list of Methods (one row for each Method) of class under investigation at the Excel file
+        /////////write whole list of Methods (one row for each Method) of class under investigation at the Excel file:
+        /// IF not written yet by the previous execution that failed!!!!!!!!!////
+        int start;
         if (testWriter == null)
             testWriter = new ConstantExcelWriter();
         if (!checkPermission()) {
             requestPermission();
         }
-        int start = testWriter.writeRowToFile(methods,false);
+        if (methodListEmptyInitially)
+        {
+            start = testWriter.writeRowToFile(methods,false);
+
+        }
+        else
+            start = testWriter.returnAfterLastRowNumber() - methods.size();
         for (MyMethod meth: methods)
         {
             meth.setExcelRowNum(start);
@@ -596,7 +612,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    private void executeAllClasses() throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+    private void executeAllClasses() throws Exception {
         List<String> tempAllConstants = new ArrayList<>();
         if (hasDonePreviousExecution()){
             //resume execution
@@ -628,7 +644,7 @@ public class MainActivity extends AppCompatActivity {
         //successfully end of total execution
         restartTotalExecution(); ///should also remove Excel file from file system...
         /*change resume Button in case that had execution in the past*/
-        resume.setText("EXECUTE ALL");
+        resume.setText("EXECUTE ALL CLASSES");
         resume.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
     }
 

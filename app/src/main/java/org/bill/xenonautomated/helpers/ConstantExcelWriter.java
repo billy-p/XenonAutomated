@@ -81,6 +81,7 @@ public class ConstantExcelWriter {
                 //////INSERT RESULTS AT THIS METHOD ROW////////////////
                 Row row = sheet.getRow(method.getExcelRowNum());
                 Cell cell;
+
                 if (min)
                 {
                     cell = row.getCell(3);
@@ -91,11 +92,18 @@ public class ConstantExcelWriter {
                 }
                 else
                 {
+                    String result = " - ";
+                    if (method.getExecutionResultMax() == null)
+                        result = "null";
+                    else if (method.getExecutionResultMax().length() > 280)
+                        result = method.getExecutionResultMax().substring(0,280);
+                    else
+                        result = method.getExecutionResultMax();
                     cell = row.getCell(4);
                     // Create the cell if it doesn't exist
                     if (cell == null)
                         cell = row.createCell(4);
-                    cell.setCellValue(method.getExecutionResultMax());
+                    cell.setCellValue(result);
                 }
                 // Write the output to the file
                 fileOut = new FileOutputStream(file);
@@ -144,6 +152,27 @@ public class ConstantExcelWriter {
         }
     }
 
+    public int returnAfterLastRowNumber() throws Exception {
+        ////READ ONLY method
+        /*Return first Row Num to be used (last used + 1)*/
+        Workbook workbook = null;
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), XENON_RESULTS_FILE);
+        InputStream inputStream;
+        if(file.exists() && !file.isDirectory())
+        {
+            inputStream = new FileInputStream(file);
+            workbook = WorkbookFactory.create(inputStream);
+            // Get Sheet
+            Sheet sheet = workbook.getSheet(CURRENT_SHEET_NAME);
+            if (sheet == null)
+                throw new Exception("No record found for that Method definition at excel file.");
+            return sheet.getLastRowNum() + 1;
+        }
+        else
+        {
+            throw new FileNotFoundException("Not found excel file to save results.");
+        }
+    }
     public int writeRowToFile(List<MyMethod> methods,boolean error)  {
         /** Creates the file and writes, or appends to it if it exists, one row.*/
         Workbook workbook = null;
