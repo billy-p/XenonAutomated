@@ -10,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.List;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -92,18 +91,11 @@ public class ConstantExcelWriter {
                 }
                 else
                 {
-                    String result = " - ";
-                    if (method.getExecutionResultMax() == null)
-                        result = "null";
-                    else if (method.getExecutionResultMax().length() > 280)
-                        result = method.getExecutionResultMax().substring(0,280);
-                    else
-                        result = method.getExecutionResultMax();
                     cell = row.getCell(4);
                     // Create the cell if it doesn't exist
                     if (cell == null)
                         cell = row.createCell(4);
-                    cell.setCellValue(result);
+                    cell.setCellValue(method.getExecutionResultMax());
                 }
                 // Write the output to the file
                 fileOut = new FileOutputStream(file);

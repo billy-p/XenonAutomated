@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.annotation.ColorRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -42,7 +41,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -174,6 +172,11 @@ public class MainActivity extends AppCompatActivity {
                 if (sharedPref.contains("currentConstant"))
                 {
                     editor.remove("currentConstant");
+                    editor.apply();
+                }
+                if (sharedPref.contains("wasLastMethodOfClass"))
+                {
+                    editor.remove("wasLastMethodOfClass");
                     editor.apply();
                 }
                 resume.setText("EXECUTE ALL CLASSES");
@@ -322,6 +325,7 @@ public class MainActivity extends AppCompatActivity {
         {
             return true;
         }
+        ////return !sharedPref.contains("methodsNotExecutedYet");
     }
     private void loadConstants()
     {
@@ -362,6 +366,24 @@ public class MainActivity extends AppCompatActivity {
         //Set the values
         editor.putStringSet("methodsNotExecutedYet",new HashSet<String>(methodsRemaining));
         editor.apply();
+    }
+    private void setWasLastMethodOfClass(boolean isLastMethodOfClass)
+    {
+        sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        //Set the values
+        editor.putBoolean("wasLastMethodOfClass",isLastMethodOfClass);
+        editor.apply();
+    }
+    private boolean wasLastMethodOfClass()
+    {
+        sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
+        if (sharedPref.contains("wasLastMethodOfClass")) /*if there is a preference*/
+        {/*these are saved from the last app launch of the user*/
+            return sharedPref.getBoolean("wasLastMethodOfClass",false);
+        }
+        else
+            return false;
     }
     private void saveCurrentConstant()
     {
@@ -426,12 +448,14 @@ public class MainActivity extends AppCompatActivity {
         /////FOR THE WHOLE CLASS: iterate methods to take info////////
         if (executeAll)
         {
-            if(methodListEmptyInitially) {
+            if(methodListEmptyInitially && !wasLastMethodOfClass()) {
                 allMethodsNeeded = loadMethodsNotExecutedYet(checkMethods, true);
                 saveMethodsToGoSharePrefs();
             }
-            else
+            else {
                 allMethodsNeeded = reLoadMethodsNotExecutedYet(checkMethods);
+                //setWasLastMethodOfClass(false);
+            }
         }
         else
         {
@@ -470,7 +494,8 @@ public class MainActivity extends AppCompatActivity {
             //remove method from list if execute-all (BEFORE execution), so that next time is not executed again if it fails
             if (executeAll) {
                 methodsRemaining.remove(allMethodsNeeded.get(j).getName());
-                saveMethodsToGoSharePrefs();
+                saveMethodsToGoSharePrefs();//edge case of last method of a class to fail, and refill from the beginning at Resume
+                setWasLastMethodOfClass(methodsRemaining.isEmpty());
             }
             //int or String params only, perform reflection
             ////////MIN VALUES////////////////////
@@ -572,7 +597,12 @@ public class MainActivity extends AppCompatActivity {
                 {
                     cause = " ";
                 }
-                methods.get(j).setExecutionResultMax("InvocationTargetException: " + e.getMessage() + cause);
+                String result = "InvocationTargetException: " + e.getMessage() + cause;
+                    if (result == null)
+                        result = "null";
+                    else if (result.length() > 280)
+                        result = result.substring(0,280);
+                methods.get(j).setExecutionResultMax(result);
             }
             catch (IllegalAccessException e)
             {
@@ -586,7 +616,12 @@ public class MainActivity extends AppCompatActivity {
                 {
                     cause = " ";
                 }
-                methods.get(j).setExecutionResultMax("IllegalAccessException: " + e.getMessage() + cause);
+                String result = "IllegalAccessException: " + e.getMessage() + cause;
+                if (result == null)
+                    result = "null";
+                else if (result.length() > 280)
+                    result = result.substring(0,280);
+                methods.get(j).setExecutionResultMax(result);
             }
             catch (Exception e)
             {
@@ -600,7 +635,12 @@ public class MainActivity extends AppCompatActivity {
                 {
                     cause = " ";
                 }
-                methods.get(j).setExecutionResultMax("Exception" + e.getMessage() + cause);
+                String result = "Exception: " + e.getMessage() + cause;
+                if (result == null)
+                    result = "null";
+                else if (result.length() > 280)
+                    result = result.substring(0,280);
+                methods.get(j).setExecutionResultMax(result);
             }
             finally {
                 try {
@@ -630,6 +670,7 @@ public class MainActivity extends AppCompatActivity {
         useReflection(true);
         constantsRemaining.remove(constantForClassTest);
         saveConstantsToGoSharePrefs();
+        setWasLastMethodOfClass(false);
 
         tempAllConstants.addAll(constantsRemaining);
         for (String constant: tempAllConstants)
@@ -640,6 +681,7 @@ public class MainActivity extends AppCompatActivity {
             useReflection(true);
             constantsRemaining.remove(constantForClassTest);
             saveConstantsToGoSharePrefs();
+            setWasLastMethodOfClass(false);
         }
         //successfully end of total execution
         restartTotalExecution(); ///should also remove Excel file from file system...

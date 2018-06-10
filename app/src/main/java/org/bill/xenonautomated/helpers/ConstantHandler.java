@@ -1,6 +1,5 @@
 package org.bill.xenonautomated.helpers;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.xml.sax.Attributes;
