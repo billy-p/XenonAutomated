@@ -1,9 +1,14 @@
 package org.bill.xenonautomated;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
@@ -34,6 +39,7 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -157,27 +163,32 @@ public class MainActivity extends AppCompatActivity {
                 if (sharedPref.contains("hasExecutedYet"))
                 {
                     editor.remove("hasExecutedYet");
-                    editor.apply();
+                    if(!editor.commit())
+                        Toast.makeText(getApplicationContext(), "Error: Failed to save key-value to Shared Preferences. Please try again!",Toast.LENGTH_LONG).show();
                 }
                 if (sharedPref.contains("methodsNotExecutedYet"))
                 {
                     editor.remove("methodsNotExecutedYet");
-                    editor.apply();
+                    if(!editor.commit())
+                        Toast.makeText(getApplicationContext(), "Error: Failed to save key-value to Shared Preferences. Please try again!",Toast.LENGTH_LONG).show();
                 }
                 if (sharedPref.contains("constantsNotExecutedYet"))
                 {
                     editor.remove("constantsNotExecutedYet");
-                    editor.apply();
+                    if(!editor.commit())
+                        Toast.makeText(getApplicationContext(), "Error: Failed to save key-value to Shared Preferences. Please try again!",Toast.LENGTH_LONG).show();
                 }
                 if (sharedPref.contains("currentConstant"))
                 {
                     editor.remove("currentConstant");
-                    editor.apply();
+                    if(!editor.commit())
+                        Toast.makeText(getApplicationContext(), "Error: Failed to save key-value to Shared Preferences. Please try again!",Toast.LENGTH_LONG).show();
                 }
                 if (sharedPref.contains("wasLastMethodOfClass"))
                 {
                     editor.remove("wasLastMethodOfClass");
-                    editor.apply();
+                    if(!editor.commit())
+                        Toast.makeText(getApplicationContext(), "Error: Failed to save key-value to Shared Preferences. Please try again!",Toast.LENGTH_LONG).show();
                 }
                 resume.setText("EXECUTE ALL CLASSES");
                 resume.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
@@ -194,6 +205,27 @@ public class MainActivity extends AppCompatActivity {
                 testWriter.deleteExcelFile();
                 Log.i(TAG,"Deleted Excel file Successfully..");
                 Toast.makeText(getApplicationContext(), "Excel DELETED Successfully!",Toast.LENGTH_LONG).show();
+
+                /*//NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
+                Notification.Builder mBuilder = new Notification.Builder(getApplicationContext());
+                mBuilder.setSmallIcon(R.drawable.ic_launcher_background);
+                mBuilder.setContentTitle("Test Notif Title");
+                mBuilder.setContentText("My test Notification Text!!!!!!!!!!!!!!!!!!!");
+                mBuilder.setLargeIcon(BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak));
+                mBuilder.setAutoCancel(true);
+                //mBuilder.setLargeIcon(Icon.createWithResource(getApplicationContext(),R.drawable.java_small_icon));
+                // This intent is fired when notification is clicked
+                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+
+                // Set the intent that will fire when the user taps the notification.
+                mBuilder.setContentIntent(pendingIntent);
+
+                Notification not = mBuilder.build();
+
+                NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.notify(1,not);*/
+
             }
         });
         //initial load of Constants List
@@ -215,25 +247,26 @@ public class MainActivity extends AppCompatActivity {
         else
             return false;
     }
-    private void willDoExecution()
-    {
+    private void willDoExecution() throws Exception {
         sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         //Set the values
         editor.putBoolean("hasExecutedYet",true);
-        editor.apply();
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
-    private void restartTotalExecution()
-    {
+    private void restartTotalExecution() throws Exception {
         sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         //Set the values
         editor.putBoolean("hasExecutedYet",false);
-        editor.apply();
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
     private List<Method> loadMethodsNotExecutedYet(Method[] checkMethods,boolean executeAll)
     {
-        int intCounter, stringCounter,nonIntOrStringCounter;
+        int validArgsCounter;
+        boolean containsOtherArgTypes;
         MyMethod oneMethod;
         List<Method> methodsList = new ArrayList<>();
         methods = new ArrayList<>();
@@ -242,27 +275,24 @@ public class MainActivity extends AppCompatActivity {
         /////FOR THE WHOLE CLASS: iterate methods to take info////////
         for (Method m : checkMethods)
         {
-            intCounter = 0;
-            stringCounter = 0;
-            nonIntOrStringCounter = 0;
+            containsOtherArgTypes = false;
+            validArgsCounter= 0;
 
             List<String> argumentTypeList = getParameterNames(m);
             //iterate arguments list, to count int,String and Other arguments
             Log.i(TAG,"Iterating method: "+m.getName());
             for (String parameter: argumentTypeList)
             {
-                if (parameter.equals("int")) {
-                    intCounter++;
-
-                }  else if (parameter.equals("java.lang.String")) {
-                    stringCounter++;
+                if (parameter.equals("int") || parameter.equals("java.lang.Integer") || parameter.equals("long") || parameter.equals("java.lang.Long") || parameter.equals("java.lang.String") || parameter.equals("boolean") || parameter.equals("java.lang.Boolean") || parameter.equals("java.lang.CharSequence") || parameter.equals("float") || parameter.equals("java.lang.Float") || parameter.equals("double") || parameter.equals("java.lang.Double") || parameter.equals("short") || parameter.equals("java.lang.Short") || parameter.equals("byte") || parameter.equals("char") || parameter.equals("android.graphics.drawable.Icon") || parameter.equals("android.graphics.Bitmap")) {
+                    validArgsCounter++;
 
                 } else{
-                    nonIntOrStringCounter++;
+                    containsOtherArgTypes = true;
+                    break;
                 }
             }
-            if ( (nonIntOrStringCounter == 0) && (intCounter > 0 || stringCounter > 0) )
-            {
+            if ( (!containsOtherArgTypes) && (validArgsCounter > 0) )
+            {/* should contain at least one argument */
                 methodsList.add(m);
                 if (executeAll)
                     methodsRemaining.add(m.getName());
@@ -343,37 +373,37 @@ public class MainActivity extends AppCompatActivity {
             postAsyncTask.execute("");
         }
     }
-    private void saveConstantsToSharePrefs()
-    {
+    private void saveConstantsToSharePrefs() throws Exception {
         sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         //Set the values
         editor.putStringSet("constants",new HashSet<String>(allConstants));
-        editor.apply();
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
-    private void saveConstantsToGoSharePrefs()
-    {
+    private void saveConstantsToGoSharePrefs() throws Exception {
         sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         //Set the values
         editor.putStringSet("constantsNotExecutedYet",new HashSet<String>(constantsRemaining));
-        editor.apply();
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
-    private void saveMethodsToGoSharePrefs()
-    {
+    private void saveMethodsToGoSharePrefs() throws Exception {
         sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         //Set the values
         editor.putStringSet("methodsNotExecutedYet",new HashSet<String>(methodsRemaining));
-        editor.apply();
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
-    private void setWasLastMethodOfClass(boolean isLastMethodOfClass)
-    {
+    private void setWasLastMethodOfClass(boolean isLastMethodOfClass) throws Exception {
         sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         //Set the values
         editor.putBoolean("wasLastMethodOfClass",isLastMethodOfClass);
-        editor.apply();
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
     private boolean wasLastMethodOfClass()
     {
@@ -385,13 +415,13 @@ public class MainActivity extends AppCompatActivity {
         else
             return false;
     }
-    private void saveCurrentConstant()
-    {
+    private void saveCurrentConstant() throws Exception {
         sharedPref = getSharedPreferences("mylists",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         //Set the values
         editor.putString("currentConstant",constantForClassTest);
-        editor.apply();
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
 
     private void writeToExcelClassErrorRow(String exce)
@@ -441,6 +471,15 @@ public class MainActivity extends AppCompatActivity {
             //throw new NullPointerException(e.getMessage());
             return;
         }
+        //////GET ALL DECLARED FIELDS, PRINT NAMES, SET ACCESSIBLE THE PRIVATE/////////////////
+        Field[] fields = classToInvestigate.getDeclaredFields();
+        for (Field field : fields) {
+            Log.i(TAG,"-------FIELD: "+field.getName()+"  -->type: "+field.getType());
+            /*if (Modifier.isPrivate(field.getModifiers())) {
+                field.setAccessible(true);
+            }*/
+        }
+        ////////////GET ALL DECLARED METHODS////////////
         Method[] checkMethods = classToInvestigate.getDeclaredMethods();//Inherited methods are excluded
         //methods = new ArrayList<>(); updated by the method
         List<Method> allMethodsNeeded;
@@ -461,7 +500,7 @@ public class MainActivity extends AppCompatActivity {
         {
             allMethodsNeeded = loadMethodsNotExecutedYet(checkMethods,false);
         }
-        Log.i(TAG,"Found: "+ allMethodsNeeded.size() + " methods with String/int params.");
+        Log.i(TAG,"Found: "+ allMethodsNeeded.size() + " methods with the desired params.");
         /////////write whole list of Methods (one row for each Method) of class under investigation at the Excel file:
         /// IF not written yet by the previous execution that failed!!!!!!!!!////
         int start;
@@ -483,9 +522,13 @@ public class MainActivity extends AppCompatActivity {
             start++;
         }
         //////////Iterate Methods again, to actually execute them///////////////
-        Log.i(TAG,"Iterate methods to execute them with MIN + MAX values: ");
+        Log.i(TAG,"Iterate methods.");
         for(int j = 0; j < allMethodsNeeded.size() ; j++)
         {
+            //if method is private, convert it to public
+            if (Modifier.isPrivate(allMethodsNeeded.get(j).getModifiers())) {
+                allMethodsNeeded.get(j).setAccessible(true);
+            }
             List<String> argumentTypeList = getParameterNames(allMethodsNeeded.get(j));
             Object [] methodParameterValues;
 
@@ -503,16 +546,53 @@ public class MainActivity extends AppCompatActivity {
             int counter = 0;
             for (String parameter: argumentTypeList)
             {
-                if (parameter.equals("int")) {
+                if (parameter.equals("int")  || parameter.equals("java.lang.Integer")) {
                     methodParameterValues[counter] = minIntegerValue;
 
-                }  else{
+                }
+                else if (parameter.equals("long") || parameter.equals("java.lang.Long"))
+                {
+                    methodParameterValues[counter] = Long.MIN_VALUE;
+                }
+                else if (parameter.equals("boolean") || parameter.equals("java.lang.Boolean"))
+                {
+                    methodParameterValues[counter] = true;
+                }
+                else if(parameter.equals("float") || parameter.equals("java.lang.Float"))
+                {
+                    methodParameterValues[counter] = Float.MIN_VALUE;
+                }
+                else if(parameter.equals("double") || parameter.equals("java.lang.Double"))
+                {
+                    methodParameterValues[counter] = Double.MIN_VALUE;
+                }
+                else if(parameter.equals("short") || parameter.equals("java.lang.Short"))
+                {
+                    methodParameterValues[counter] = Short.MIN_VALUE;
+                }
+                else if(parameter.equals("byte"))
+                {
+                    methodParameterValues[counter] = -128;
+                }
+                else if(parameter.equals("char"))
+                {
+                    methodParameterValues[counter] = '\u0000';
+                }
+                else if(parameter.equals("android.graphics.drawable.Icon"))
+                {
+                    methodParameterValues[counter] = BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak);
+                }
+                else if(parameter.equals("android.graphics.Bitmap"))
+                {
+                    methodParameterValues[counter] = BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak);
+                }
+                else{
                     methodParameterValues[counter] = minStringValue;
                 }
                 counter++;
             }
             ////execute method with MAX values/////
-            Log.i(TAG,"Execute method with MIN values");
+            Log.i(TAG,".....Execute method " + allMethodsNeeded.get(j).getName() + " with MIN values");
             String cause = " ";
             try {
                 allMethodsNeeded.get(j).invoke(varClass,methodParameterValues);
@@ -570,18 +650,56 @@ public class MainActivity extends AppCompatActivity {
 
             //iterate arguments list again, to set max values
             counter = 0;
+            methodParameterValues  = new Object[argumentTypeList.size()];
             for (String parameter: argumentTypeList)
             {
-                if (parameter.equals("int")) {
+                if (parameter.equals("int") || parameter.equals("java.lang.Integer")) {
                     methodParameterValues[counter] = Integer.MAX_VALUE;
 
-                }  else{
+                }
+                else if (parameter.equals("long") || parameter.equals("java.lang.Long"))
+                {
+                    methodParameterValues[counter] = Long.MAX_VALUE;
+                }
+                else if (parameter.equals("boolean") || parameter.equals("java.lang.Boolean"))
+                {
+                    methodParameterValues[counter] = true;
+                }
+                else if(parameter.equals("float") || parameter.equals("java.lang.Float"))
+                {
+                    methodParameterValues[counter] = Float.MAX_VALUE;
+                }
+                else if(parameter.equals("double") || parameter.equals("java.lang.Double"))
+                {
+                    methodParameterValues[counter] = Double.MAX_VALUE;
+                }
+                else if(parameter.equals("short") || parameter.equals("java.lang.Short"))
+                {
+                    methodParameterValues[counter] = Short.MAX_VALUE;
+                }
+                else if(parameter.equals("byte"))
+                {
+                    methodParameterValues[counter] = 127;
+                }
+                else if(parameter.equals("char"))
+                {
+                    methodParameterValues[counter] = '\uffff';
+                }
+                else if(parameter.equals("android.graphics.drawable.Icon"))
+                {
+                    methodParameterValues[counter] = BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_double);
+                }
+                else if(parameter.equals("android.graphics.Bitmap"))
+                {
+                    methodParameterValues[counter] = BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_double);
+                }
+                else{
                     methodParameterValues[counter] = new String(new char[21474836]).replace("\0", "c");
                 }
                 Log.i(TAG,"Max parameter No."+counter+ ": " + methodParameterValues[counter]);
                 counter++;
             }
-            Log.i(TAG,"Execute method with MAX values");
+            Log.i(TAG,"........Execute method " + allMethodsNeeded.get(j).getName() + " with MAX values");
             try {
                 allMethodsNeeded.get(j).invoke(varClass,methodParameterValues);
                 Log.i(TAG,"Successful execution of invoke.");
@@ -650,6 +768,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.i(TAG,"Failed to write MAX results to Excel.");
                 }
             }
+            methodParameterValues  = null;
         }
     }
     private void executeAllClasses() throws Exception {
@@ -668,6 +787,9 @@ public class MainActivity extends AppCompatActivity {
             saveCurrentConstant();
         }
         useReflection(true);
+        Toast.makeText(getApplicationContext(),"FINISHED CLASS "+constantForClassTest,Toast.LENGTH_LONG).show();
+        Log.i(TAG,"|||||||||||++++++++++++++++++FINISHED CLASS "+constantForClassTest+"++++++++++++++++++|||||||||||");
+        //Thread.sleep(3000);
         constantsRemaining.remove(constantForClassTest);
         saveConstantsToGoSharePrefs();
         setWasLastMethodOfClass(false);
@@ -679,6 +801,9 @@ public class MainActivity extends AppCompatActivity {
             saveCurrentConstant();
 
             useReflection(true);
+            Toast.makeText(getApplicationContext(),"FINISHED CLASS "+constantForClassTest,Toast.LENGTH_LONG).show();
+            Log.i(TAG,"|||||||||||++++++++++++++++++FINISHED CLASS "+constantForClassTest+"++++++++++++++++++|||||||||||");
+            //Thread.sleep(3000);
             constantsRemaining.remove(constantForClassTest);
             saveConstantsToGoSharePrefs();
             setWasLastMethodOfClass(false);
@@ -878,6 +1003,8 @@ public class MainActivity extends AppCompatActivity {
             } catch (SAXException e) {
                 e.printStackTrace();
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
