@@ -21,6 +21,23 @@ public class ConstantExcelWriter {
     private static final String XENON_RESULTS_FILE = "xenon.xlsx";
     private static final String CURRENT_SHEET_NAME = "API_" + String.valueOf(MainActivity.ANDROID_SDK_VERSION);
     //new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filename);
+    private static ConstantExcelWriter single_instance = null;
+
+
+    // private constructor restricted to this class itself
+    private ConstantExcelWriter()
+    {
+        ///
+    }
+
+    // static method to create instance of Singleton class
+    public static ConstantExcelWriter getInstance()
+    {
+        if (single_instance == null)
+            single_instance = new ConstantExcelWriter();
+
+        return single_instance;
+    }
 
     public void deleteExcelFile()
     {
