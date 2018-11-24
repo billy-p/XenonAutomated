@@ -53,11 +53,6 @@ public class ClassHandler extends DefaultHandler{
         Class classToInvestigate = null;
         try {
             classToInvestigate = Class.forName(className);
-
-            /*if(className.equals("android.os.CancellationSignal"))
-            {
-                Log.i(TAG,"Strange class found.");
-            }*/
             return !Modifier.isAbstract(classToInvestigate.getModifiers()) && classToInvestigate.getDeclaredMethods().length > 0 && hasValidMethodArray(classToInvestigate);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -97,7 +92,7 @@ public class ClassHandler extends DefaultHandler{
         boolean hasAcceptableConstructor = false;
         try {
             Class classToInvestigate = Class.forName(className);
-            Constructor[] allConstructors = classToInvestigate.getConstructors();
+            Constructor[] allConstructors = classToInvestigate.getDeclaredConstructors();
 
             Class[] parameterTypes = null;
             for(Constructor construct: allConstructors)

@@ -59,11 +59,46 @@ public abstract class GenericActivity extends AppCompatActivity {
     protected String currentStringSharedPrefs;
     protected ArgumentsCreator argsCreator;
 
+    public GenericActivity()
+    {
+        super();
+        testWriter = ConstantExcelWriter.getInstance();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         initializeArgumentsCreator();
+    }
+    protected void initializeArgumentsCreator()
+    {
+        argsCreator = new ArgumentsCreator();
+        argsCreator.initializeArgumentCreator(getApplicationContext(),getResources());
+        ////set min - max values-to-be-returned hash map
+        //argsCreator = ArgumentsCreator.getInstance();
+        //argsCreator.addToMap(ValidArguments.INT,Integer.MAX_VALUE, Integer.MIN_VALUE,1);
+        //argsCreator.addToMap(ValidArguments.INTEGER,Integer.MAX_VALUE, Integer.MIN_VALUE,1);
+        //argsCreator.addToMap(ValidArguments.RESOURCE_ID,R.drawable.spring_oak_extralarge,R.drawable.spring_oak_small,R.drawable.spring_oak_small);
+        //argsCreator.addToMap(ValidArguments.LONG,Long.MAX_VALUE,Long.MIN_VALUE,112L);
+        //argsCreator.addToMap(ValidArguments.LONG_CLASS,Long.MAX_VALUE,Long.MIN_VALUE,112L);
+        //argsCreator.addToMap(ValidArguments.SHORT,Short.MAX_VALUE,Short.MIN_VALUE,5);
+        //argsCreator.addToMap(ValidArguments.SHORT_CLASS,Short.MAX_VALUE,Short.MIN_VALUE,5);
+        //argsCreator.addToMap(ValidArguments.FLOAT,Float.MAX_VALUE,Float.MIN_VALUE,3.6f);
+        //argsCreator.addToMap(ValidArguments.FLOAT_CLASS,Float.MAX_VALUE,Float.MIN_VALUE,3.6f);
+        //argsCreator.addToMap(ValidArguments.DOUBLE,Double.MAX_VALUE,Double.MIN_VALUE,3.5);
+        //argsCreator.addToMap(ValidArguments.DOUBLE_CLASS,Double.MAX_VALUE,Double.MIN_VALUE,3.5);
+        //argsCreator.addToMap(ValidArguments.BOOLEAN,true,false,true);
+        //argsCreator.addToMap(ValidArguments.BOOLEAN_CLASS,true,false,true);
+        //argsCreator.addToMap(ValidArguments.BYTE,Byte.MAX_VALUE,Byte.MIN_VALUE,0);
+        //argsCreator.addToMap(ValidArguments.CHAR,'\uffff','\u0000','s');
+        //argsCreator.addToMap(ValidArguments.CHAR_SEQUENCE,new String(new char[21474836]).replace("\0", "c"),"b","d");
+        //argsCreator.addToMap(ValidArguments.STRING,new String(new char[21474836]).replace("\0", "c"),"a","d");
+        //argsCreator.addToMapBitmap(ValidArguments.BITMAP,getResources());
+        //argsCreator.addToMapIcon(ValidArguments.ICON,getApplicationContext());
+        //argsCreator.addToMap(ValidArguments.BITMAP, BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_large),BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_small),BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_small));
+        //argsCreator.addToMap(ValidArguments.ICON,BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_large),BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_small),BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_small));
+        //argsCreator.addToMap(ValidArguments.CONTEXT,getApplicationContext(),getApplicationContext(),getApplicationContext());
+        //////////////////////////
     }
     protected void resumeExecution()
     {
@@ -89,37 +124,6 @@ public abstract class GenericActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Error: Exception: " + e.getMessage(),Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
-    }
-    public GenericActivity()
-    {
-        super();
-        testWriter = ConstantExcelWriter.getInstance();
-    }
-    protected void initializeArgumentsCreator()
-    {
-        ////set min - max values-to-be-returned hash map
-        argsCreator = ArgumentsCreator.getInstance();
-        argsCreator.addToMap(ValidArguments.INT,Integer.MAX_VALUE, Integer.MIN_VALUE,1);
-        argsCreator.addToMap(ValidArguments.INTEGER,Integer.MAX_VALUE, Integer.MIN_VALUE,1);
-        argsCreator.addToMap(ValidArguments.RESOURCE_ID,R.drawable.spring_oak_large,R.drawable.spring_oak_small,R.drawable.spring_oak_small);
-        argsCreator.addToMap(ValidArguments.LONG,Long.MAX_VALUE,Long.MIN_VALUE,112L);
-        argsCreator.addToMap(ValidArguments.LONG_CLASS,Long.MAX_VALUE,Long.MIN_VALUE,112L);
-        argsCreator.addToMap(ValidArguments.SHORT,Short.MAX_VALUE,Short.MIN_VALUE,5);
-        argsCreator.addToMap(ValidArguments.SHORT_CLASS,Short.MAX_VALUE,Short.MIN_VALUE,5);
-        argsCreator.addToMap(ValidArguments.FLOAT,Float.MAX_VALUE,Float.MIN_VALUE,3.6f);
-        argsCreator.addToMap(ValidArguments.FLOAT_CLASS,Float.MAX_VALUE,Float.MIN_VALUE,3.6f);
-        argsCreator.addToMap(ValidArguments.DOUBLE,Double.MAX_VALUE,Double.MIN_VALUE,3.5);
-        argsCreator.addToMap(ValidArguments.DOUBLE_CLASS,Double.MAX_VALUE,Double.MIN_VALUE,3.5);
-        argsCreator.addToMap(ValidArguments.BOOLEAN,true,false,true);
-        argsCreator.addToMap(ValidArguments.BOOLEAN_CLASS,true,false,true);
-        argsCreator.addToMap(ValidArguments.BYTE,Byte.MAX_VALUE,Byte.MIN_VALUE,0);
-        argsCreator.addToMap(ValidArguments.CHAR,'\uffff','\u0000','s');
-        argsCreator.addToMap(ValidArguments.CHAR_SEQUENCE,new String(new char[21474836]).replace("\0", "c"),"b","d");
-        argsCreator.addToMap(ValidArguments.STRING,new String(new char[21474836]).replace("\0", "c"),"a","d");
-        argsCreator.addToMap(ValidArguments.BITMAP,R.drawable.spring_oak_large,R.drawable.spring_oak_small,R.drawable.spring_oak_small);
-        argsCreator.addToMap(ValidArguments.ICON,R.drawable.spring_oak_large,R.drawable.spring_oak_small,R.drawable.spring_oak_small);
-        argsCreator.addToMap(ValidArguments.CONTEXT,getApplicationContext(),getApplicationContext(),getApplicationContext());
-        //////////////////////////
     }
     protected void clearSharedPrefs()
     {
@@ -160,6 +164,12 @@ public abstract class GenericActivity extends AppCompatActivity {
         Log.i(TAG,"Cleared DATA successfully.");
         Toast.makeText(getApplicationContext(), "Cleared DATA successfully",Toast.LENGTH_LONG).show();
     }
+    protected void deleteExcelFile()
+    {
+        testWriter.deleteExcelFile();
+        Log.i(TAG,"Deleted Excel file Successfully..");
+        Toast.makeText(getApplicationContext(), "Excel DELETED Successfully!",Toast.LENGTH_LONG).show();
+    }
     protected boolean hasDonePreviousExecution()
     {
         sharedPref = getSharedPreferences(this.sharedPrefsName,Context.MODE_PRIVATE);
@@ -178,7 +188,7 @@ public abstract class GenericActivity extends AppCompatActivity {
         if(!editor.commit())
             throw new Exception("Failed to save key-value to Shared Preferences");
     }
-    protected void restartTotalExecution() throws Exception {
+    protected void reinitializeTotalExecution() throws Exception {
         sharedPref = getSharedPreferences(this.sharedPrefsName,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         //Set the values
@@ -224,6 +234,7 @@ public abstract class GenericActivity extends AppCompatActivity {
     protected List<Method> reLoadMethodsNotExecutedYet(Method[] checkMethods)
     {
         MyMethod oneMethod;
+        boolean containsOtherArgTypes;
         sharedPref = getSharedPreferences(this.sharedPrefsName,Context.MODE_PRIVATE);
         methodsRemaining = new ArrayList<>();
         methodsRemaining.addAll(sharedPref.getStringSet("methodsNotExecutedYet",new HashSet<String>()));
@@ -232,10 +243,24 @@ public abstract class GenericActivity extends AppCompatActivity {
         for (Method m : checkMethods)
         {
             if (methodsRemaining.contains(m.getName())) {
-                methodsList.add(m);
-                //////////set model for Method for excel////////////
-                oneMethod = new MyMethod(m.getName(),getParameterNames(m),m.getDeclaringClass().getName());
-                methods.add(oneMethod);
+                ///check parameters too
+                containsOtherArgTypes = false;
+                List<String> argumentTypeList = getParameterNames(m);
+                //iterate arguments list, to count int,String and Other arguments
+                for (String parameter: argumentTypeList)
+                {
+                    if(!ValidArguments.contains(parameter)) {
+                        containsOtherArgTypes = true;
+                        break;
+                    }
+                }
+                if ( (!containsOtherArgTypes) && (argumentTypeList.size() > 0) ) {
+                    ///////////////////////
+                    methodsList.add(m);
+                    //////////set model for Method for excel////////////
+                    oneMethod = new MyMethod(m.getName(), getParameterNames(m), m.getDeclaringClass().getName());
+                    methods.add(oneMethod);
+                }
             }
         }
         return methodsList;
@@ -286,10 +311,10 @@ public abstract class GenericActivity extends AppCompatActivity {
         else
         {/*No constants are save in shared prefs, so call API to get them*/
             prograssBar.setVisibility(View.VISIBLE);
-            GetAdroidRequest postAsyncTask = new GetAdroidRequest();
-            postAsyncTask.execute("");
+            documentationRequest();
         }
     }
+    abstract protected void documentationRequest();
     protected void saveConstantsToSharePrefs() throws Exception {
         sharedPref = getSharedPreferences(this.sharedPrefsName,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -381,12 +406,461 @@ public abstract class GenericActivity extends AppCompatActivity {
             {
                 methodParameterValues[counter] = argsCreator.get(ValidArguments.getEnumByValue(parameter)).getMaxParameterValue();
             }
-            Log.i(TAG,"Max parameter No."+counter+ ": " + methodParameterValues[counter]);
             counter++;
         }
         return methodParameterValues;
     }
-    protected abstract void useReflection(boolean executeAll) throws Exception;
+    protected void useReflectionFullExecution() throws Exception {
+        Object varClass;
+        Class classToInvestigate;
+
+        varClass = createInstanceForClass();
+        try {
+            classToInvestigate = Class.forName(varClass.getClass().getName());
+            Log.i(TAG,"__________________________________CLASS: "+classToInvestigate.getName()+"__________________________________");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "///////////////////Class not found for "+constantForClassTest+"///////////////////",Toast.LENGTH_LONG).show();
+            writeToExcelClassErrorRow(e.getMessage());
+            //throw new ClassCastException(e.getMessage());
+            return;
+        }
+        catch (NullPointerException e)
+        {
+            e.printStackTrace();
+            Toast.makeText(this, "///////////////////Null Class Variable///////////////////",Toast.LENGTH_LONG).show();
+            Log.i(TAG,"///////////////////Null Class Variable///////////////////");
+            writeToExcelClassErrorRow(e.getMessage());
+            //throw new NullPointerException(e.getMessage());
+            return;
+        }
+
+        ////////////GET ALL DECLARED METHODS////////////
+        Method[] checkMethods;//Inherited methods are excluded
+        try {
+            checkMethods = classToInvestigate.getDeclaredMethods();//Inherited methods are excluded
+        }
+        catch (NoClassDefFoundError e)
+        {
+            e.printStackTrace();
+            Toast.makeText(this, "///////////////////No Class Definition Found for "+constantForClassTest+"///////////////////",Toast.LENGTH_LONG).show();
+            Log.i(TAG,"///////////////////No Class Definition Found for "+constantForClassTest+"///////////////////");
+            return;
+        }
+        //methods = new ArrayList<>(); updated by the method
+        List<Method> allMethodsNeeded;
+        boolean methodListEmptyInitially = emptyMethodsToGo();
+        /////FOR THE WHOLE CLASS: iterate methods to take info////////
+        if(methodListEmptyInitially && !wasLastMethodOfClass()) {
+            allMethodsNeeded = loadMethodsNotExecutedYet(checkMethods, true);
+            saveMethodsToGoSharePrefs();
+        }
+        else {
+            allMethodsNeeded = reLoadMethodsNotExecutedYet(checkMethods);
+        }
+        Log.i(TAG,"-----------------Will Execute "+ allMethodsNeeded.size() + " METHODS for Class "+constantForClassTest+"-----------------");
+        /////////write whole list of Methods (one row for each Method) of class under investigation at the Excel file:
+        /// IF not written yet by the previous execution that failed!!!!!!!!!////
+        int start;
+        if (!checkPermission()) {
+            requestPermission();
+        }
+        if (methodListEmptyInitially)
+        {
+            start = testWriter.writeRowToFile(methods,false);
+
+        }
+        else
+            start = testWriter.returnAfterLastRowNumber() - methods.size();
+        for (MyMethod meth: methods)
+        {
+            meth.setExcelRowNum(start);
+            start++;
+        }
+        //////////Iterate Methods again, to execute them///////////////
+        for(int j = 0; j < allMethodsNeeded.size() ; j++)
+        {
+            //if method is private - protected, convert it to public
+            //if (Modifier.isPrivate(allMethodsNeeded.get(j).getModifiers()) || Modifier.isProtected(allMethodsNeeded.get(j).getModifiers()))  {
+            allMethodsNeeded.get(j).setAccessible(true);
+            //}
+            Object [] methodParameterValues;
+
+            //remove method from list if execute-all (BEFORE execution), so that next time is not executed again if it fails
+            methodsRemaining.remove(allMethodsNeeded.get(j).getName());
+            saveMethodsToGoSharePrefs();//edge case of last method of a class to fail, and refill from the beginning at Resume
+            setWasLastMethodOfClass(methodsRemaining.isEmpty());
+            //int or String params only, perform reflection
+            ////////MIN VALUES////////////////////
+            //iterate arguments list again, to set min values
+            methodParameterValues = this.minArgumentsList(getParameterNames(allMethodsNeeded.get(j)));
+            ////execute method with MIN values/////
+            varClass = createInstanceForClass();
+            if (varClass == null)
+            {
+                continue;
+            }
+            /////////////////////////
+            Log.i(TAG,"||||||||||||||  METHOD " + allMethodsNeeded.get(j).getName() + " with _MIN_ values ||||||||||||||");
+            String cause = " ";
+            try {
+                allMethodsNeeded.get(j).invoke(varClass,methodParameterValues);
+                Log.i(TAG,"********** Invoke SUCCESS **********");
+                methods.get(j).setExecutionResultMin("SUCCESS");
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: InvocationTargetException");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                methods.get(j).setExecutionResultMin("InvocationTargetException: " + e.getMessage() + cause);
+            }
+            catch (IllegalAccessException e)
+            {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: IllegalAccessException");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                methods.get(j).setExecutionResultMin("IllegalAccessException: " + e.getMessage() + cause);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: Exception");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                methods.get(j).setExecutionResultMin("Exception: " + e.getMessage() + cause);
+            }
+            finally {
+                try {
+                    testWriter.writeExecutionResultOfMethodToFile(methods.get(j),true);
+                } catch (Exception e) {
+                    Log.i(TAG,"------( Failed to write MIN result to Excel )------");
+                    e.printStackTrace();
+                }
+            }
+
+            //iterate arguments list again, to set max values
+            methodParameterValues  = this.maxArgumentsList(getParameterNames(allMethodsNeeded.get(j)),allMethodsNeeded.get(j).getName());
+            ///////////////////
+            varClass = createInstanceForClass();
+            if (varClass == null)
+                return;
+            //////////////////////////////////////
+            Log.i(TAG,"||||||||||||||  METHOD " + allMethodsNeeded.get(j).getName() + " with _MAX_ values ||||||||||||||");
+            try {
+                allMethodsNeeded.get(j).invoke(varClass,methodParameterValues);
+                Log.i(TAG,"********** Invoke SUCCESS **********");
+                methods.get(j).setExecutionResultMax("SUCCESS");
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: InvocationTargetException");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage().substring(0, Math.min(e.getCause().getMessage().length(),160));
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                String message;
+                if ( e.getMessage() == null)
+                {
+                    message = " null ";
+                }
+                else
+                {
+                    message = e.getMessage().substring(0,Math.min(e.getMessage().length(),160));
+                }
+                message = "InvocationTargetException: " + message + cause;
+                methods.get(j).setExecutionResultMax(message);
+            }
+            catch (IllegalAccessException e)
+            {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: IllegalAccessException");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                String result = "IllegalAccessException: " + e.getMessage() + cause;
+                if (result == null)
+                    result = "null";
+                else if (result.length() > 280)
+                    result = result.substring(0,280);
+                methods.get(j).setExecutionResultMax(result);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: Exception");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                String result = "Exception: " + e.getMessage() + cause;
+                if (result == null)
+                    result = "null";
+                else if (result.length() > 280)
+                    result = result.substring(0,280);
+                methods.get(j).setExecutionResultMax(result);
+            }
+            finally {
+                try {
+                    testWriter.writeExecutionResultOfMethodToFile(methods.get(j),false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.i(TAG,"------( Failed to write MAX result to Excel )------");
+                }
+            }
+        }
+    }
+    protected void useReflectionOneClass() throws Exception {
+        Object varClass;
+        Class classToInvestigate;
+
+        varClass = createInstanceForClass();
+        try {
+            classToInvestigate = Class.forName(varClass.getClass().getName());
+            Log.i(TAG,"__________________________________CLASS: "+classToInvestigate.getName()+"__________________________________");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "///////////////////Class not found for "+constantForClassTest+"///////////////////",Toast.LENGTH_LONG).show();
+            writeToExcelClassErrorRow(e.getMessage());
+            //throw new ClassCastException(e.getMessage());
+            return;
+        }
+        catch (NullPointerException e)
+        {
+            e.printStackTrace();
+            Toast.makeText(this, "///////////////////Null Class Variable///////////////////",Toast.LENGTH_LONG).show();
+            Log.i(TAG,"///////////////////Null Class Variable///////////////////");
+            writeToExcelClassErrorRow(e.getMessage());
+            //throw new NullPointerException(e.getMessage());
+            return;
+        }
+
+        ////////////GET ALL DECLARED METHODS////////////
+        Method[] checkMethods;//Inherited methods are excluded
+        try {
+            checkMethods = classToInvestigate.getDeclaredMethods();//Inherited methods are excluded
+        }
+        catch (NoClassDefFoundError e)
+        {
+            e.printStackTrace();
+            Toast.makeText(this, "///////////////////No Class Definition Found for "+constantForClassTest+"///////////////////",Toast.LENGTH_LONG).show();
+            Log.i(TAG,"///////////////////No Class Definition Found for "+constantForClassTest+"///////////////////");
+            return;
+        }
+        //methods = new ArrayList<>(); updated by the method
+        List<Method> allMethodsNeeded;
+        boolean methodListEmptyInitially = emptyMethodsToGo();
+        /////FOR THE WHOLE CLASS: iterate methods to take info////////
+        allMethodsNeeded = loadMethodsNotExecutedYet(checkMethods,false);
+        Log.i(TAG,"-----------------Will Execute "+ allMethodsNeeded.size() + " METHODS for Class "+constantForClassTest+"-----------------");
+        /////////write whole list of Methods (one row for each Method) of class under investigation at the Excel file:
+        /// IF not written yet by the previous execution that failed!!!!!!!!!////
+        int start;
+        if (!checkPermission()) {
+            requestPermission();
+        }
+        if (methodListEmptyInitially)
+        {
+            start = testWriter.writeRowToFile(methods,false);
+
+        }
+        else
+            start = testWriter.returnAfterLastRowNumber() - methods.size();
+        for (MyMethod meth: methods)
+        {
+            meth.setExcelRowNum(start);
+            start++;
+        }
+        //////////Iterate Methods again, to actually execute them///////////////
+        for(int j = 0; j < allMethodsNeeded.size() ; j++)
+        {//classToInvestigate.newInstance()
+            //if method is private - protected, convert it to public
+            //if (Modifier.isPrivate(allMethodsNeeded.get(j).getModifiers()) || Modifier.isProtected(allMethodsNeeded.get(j).getModifiers()))  {
+            allMethodsNeeded.get(j).setAccessible(true);
+            //}
+            //List<String> argumentTypeList = getParameterNames(allMethodsNeeded.get(j));
+            Object [] methodParameterValues;
+            //int or String params only, perform reflection
+            ////////MIN VALUES////////////////////
+            //iterate arguments list again, to set min values
+            methodParameterValues = this.minArgumentsList(getParameterNames(allMethodsNeeded.get(j)));
+            ////execute method with MIN values/////
+            varClass = createInstanceForClass();
+            if (varClass == null)
+            {
+               continue;
+            }
+            /////////////////////////
+            Log.i(TAG,"||||||||||||||  METHOD " + allMethodsNeeded.get(j).getName() + " with _MIN_ values ||||||||||||||");
+            String cause = " ";
+            try {
+                allMethodsNeeded.get(j).invoke(varClass,methodParameterValues);
+                Log.i(TAG,"********** Invoke SUCCESS **********");
+                methods.get(j).setExecutionResultMin("SUCCESS");
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: InvocationTargetException");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                methods.get(j).setExecutionResultMin("InvocationTargetException: " + e.getMessage() + cause);
+            }
+            catch (IllegalAccessException e)
+            {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: IllegalAccessException");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                methods.get(j).setExecutionResultMin("IllegalAccessException: " + e.getMessage() + cause);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: Exception");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                methods.get(j).setExecutionResultMin("Exception: " + e.getMessage() + cause);
+            }
+            finally {
+                try {
+                    testWriter.writeExecutionResultOfMethodToFile(methods.get(j),true);
+                } catch (Exception e) {
+                    Log.i(TAG,"------( Failed to write MIN result to Excel )------");
+                    e.printStackTrace();
+                }
+            }
+
+            //iterate arguments list again, to set max values
+            methodParameterValues  = this.maxArgumentsList(getParameterNames(allMethodsNeeded.get(j)),allMethodsNeeded.get(j).getName());
+            ///////////////////////////////////////////////////
+            varClass = createInstanceForClass();
+            if (varClass == null)
+                return;
+            //////////////////////////////////////
+            Log.i(TAG,"||||||||||||||  METHOD " + allMethodsNeeded.get(j).getName() + " with _MAX_ values ||||||||||||||");
+            try {
+                allMethodsNeeded.get(j).invoke(varClass,methodParameterValues);
+                Log.i(TAG,"********** Invoke SUCCESS **********");
+                methods.get(j).setExecutionResultMax("SUCCESS");
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: InvocationTargetException");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage().substring(0, Math.min(e.getCause().getMessage().length(),160));
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                String message;
+                if ( e.getMessage() == null)
+                {
+                    message = " null ";
+                }
+                else
+                {
+                    message = e.getMessage().substring(0,Math.min(e.getMessage().length(),160));
+                }
+                message = "InvocationTargetException: " + message + cause;
+                methods.get(j).setExecutionResultMax(message);
+            }
+            catch (IllegalAccessException e)
+            {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: IllegalAccessException");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                String result = "IllegalAccessException: " + e.getMessage() + cause;
+                if (result == null)
+                    result = "null";
+                else if (result.length() > 280)
+                    result = result.substring(0,280);
+                methods.get(j).setExecutionResultMax(result);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG,"CATCH: Exception");
+                try
+                {
+                    cause = " Cause: "+e.getCause().getMessage();
+                }
+                catch (NullPointerException nullEx)
+                {
+                    cause = " ";
+                }
+                String result = "Exception: " + e.getMessage() + cause;
+                if (result == null)
+                    result = "null";
+                else if (result.length() > 280)
+                    result = result.substring(0,280);
+                methods.get(j).setExecutionResultMax(result);
+            }
+            finally {
+                try {
+                    testWriter.writeExecutionResultOfMethodToFile(methods.get(j),false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.i(TAG,"------( Failed to write MAX result to Excel )------");
+                }
+            }
+        }
+    }
+
     protected void executeAllClasses() throws Exception {
         List<String> tempAllConstants = new ArrayList<>();
         if (hasDonePreviousExecution()){
@@ -402,7 +876,7 @@ public abstract class GenericActivity extends AppCompatActivity {
             loadCurrentConstant();
             saveCurrentConstant();
         }
-        useReflection(true);
+        useReflectionFullExecution();
         Log.i(TAG,"|||||||||||||||||||++++++++++++++++++FINISHED EXECUTION OF CLASS "+constantForClassTest+"++++++++++++++++++|||||||||||||||||||");
         //Thread.sleep(3000);
         constantsRemaining.remove(constantForClassTest);
@@ -415,7 +889,7 @@ public abstract class GenericActivity extends AppCompatActivity {
             constantForClassTest = constant;
             saveCurrentConstant();
 
-            useReflection(true);
+            useReflectionFullExecution();
             Log.i(TAG,"|||||||||||||||||||++++++++++++++++++FINISHED EXECUTION OF CLASS "+constantForClassTest+"++++++++++++++++++|||||||||||||||||||");
             //Thread.sleep(3000);
             constantsRemaining.remove(constantForClassTest);
@@ -423,7 +897,7 @@ public abstract class GenericActivity extends AppCompatActivity {
             setWasLastMethodOfClass(false);
         }
         //successfully end of total execution
-        restartTotalExecution(); ///should also remove Excel file from file system...
+        reinitializeTotalExecution();
         /*change resume Button in case that had execution in the past*/
         resume.setText("EXECUTE ALL CLASSES");
         resume.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
@@ -431,7 +905,7 @@ public abstract class GenericActivity extends AppCompatActivity {
     protected abstract Object createInstanceForClass() throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException;
     protected void executeOneMethod() throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException
     {
-        Object varClass = createInstanceForClass();
+        Object varClass;
 
         Method methToExecute = methodsMap.get(methodsSpinner.getSelectedItem().toString());
         methToExecute.setAccessible(true);
@@ -728,19 +1202,12 @@ public abstract class GenericActivity extends AppCompatActivity {
     }
     /*protected class of async thread, that makes a GET API call to Android official Documentation
             and saves to Shared prefferances the Constants List*/
-    protected class GetAdroidRequest extends AsyncTask<String, Void, String>
+    abstract protected class GetAdroidRequest extends AsyncTask<String, Void, String>
     {
 
         @Override
-        protected String doInBackground(String... strings) {
-            return null;
-        }
-
+        abstract protected String doInBackground(String... strings);
         @Override
-        protected void onPostExecute(String constantsTable)
-        {
-
-        }
-
+        abstract protected void onPostExecute(String constantsTable);
     }
 }
