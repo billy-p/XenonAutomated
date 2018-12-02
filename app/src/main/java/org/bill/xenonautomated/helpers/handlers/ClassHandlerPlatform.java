@@ -1,17 +1,31 @@
 package org.bill.xenonautomated.helpers.handlers;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import org.bill.xenonautomated.MainActivity;
 import org.bill.xenonautomated.helpers.handlers.ClassHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
 public class ClassHandlerPlatform extends ClassHandler {
     private String link = "";
+    private List<String> contextClasses;
 
-    public ClassHandlerPlatform()
+    public ClassHandlerPlatform(List<String> allContextClasses)
     {
         super();
-        //suitablePackagePrefix = "android.app.";
+        initializeContextClassesList(allContextClasses);
+    }
+    private void initializeContextClassesList(List<String> allContextClasses)
+    {
+        contextClasses = new ArrayList<>();
+        this.contextClasses.addAll(allContextClasses);
     }
 
     @Override
@@ -29,7 +43,7 @@ public class ClassHandlerPlatform extends ClassHandler {
             int startIndex = "https://developer.android.com/reference/".length();
             link = link.substring(startIndex, link.length() - 5);
             link = link.replace("/",".");
-            if (this.isSuitable(link) && this.hasProperConstructor(link) )
+            if (!contextClasses.contains(link) && this.isSuitable(link) && this.hasProperConstructor(link) )
                 listOfClasses.add(link);
             link = "";
         }

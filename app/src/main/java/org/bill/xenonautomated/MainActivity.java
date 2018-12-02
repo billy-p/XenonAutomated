@@ -6,7 +6,13 @@ import android.app.PendingIntent;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -38,6 +44,7 @@ import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -160,6 +167,13 @@ public class MainActivity extends GenericActivity {
             public void onClick(View v) {
                 //attempt to execute Reflection test for the class that constant selected returns
                 try {
+                    /////////////////////////////////test///////////////////
+                    //Object test = BitmapFactory.decodeResource( getApplicationContext().getResources(), R.drawable.spring_oak_large);
+                    //Drawable d = getApplicationContext().getResources().getDrawable(R.drawable.spring_oak_extralarge);
+                    //Object test = drawableToBitmap(d);
+                    //if (test == null)
+                        //Log.i(TAG,"?????");
+                    /////////////////////////////////test///////////////////
                     executeExtraClasses();
                     Toast.makeText(getApplicationContext(), "EXECUTION OF EXTRA CLASSES COMPLETED SUCCESFULLY!!!!!! CONGRATS",Toast.LENGTH_LONG).show();
                     Log.i(TAG,"------------------------Execution of one class completed Successfully-----------------------------");
@@ -195,40 +209,27 @@ public class MainActivity extends GenericActivity {
         //Request ALL SDK permissions, for target API version >= 23
         checkRequestAllPermissions();
     }
+    protected static Bitmap drawableToBitmap (Drawable drawable) {
 
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable)drawable).getBitmap();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
     protected Object createInstanceForClass() throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException
     {
         return getApplicationContext().getSystemService(getValueFromConstant(constantForClassTest));
     }
 
     private void executeExtraClasses() {
-        /*List<String> args = new ArrayList<String>();
-        args.add("int");
-        args.add("android.app.Notification");
-        MyMethod newMeth = new MyMethod("notify",args,"android.app.NotificationManager");
-        try {
-            int offset;
-            if (testWriter == null)
-                testWriter = new ConstantExcelWriter();
-            if (!checkPermission()) {
-                requestPermission();
-            }
-            if (emptyMethodsToGo())
-            {
-                List<MyMethod> listofmeth = new ArrayList<>();
-                listofmeth.add(newMeth);
-                offset = testWriter.writeRowToFile(listofmeth,false);
-            }
-            else
-                offset = testWriter.returnAfterLastRowNumber() - methods.size();
-            newMeth.setExcelRowNum(offset);
-        }
-        catch (Exception e)
-        {
-            Log.i(TAG,"Failed to write extra classes methods to Excel.");
-        }*/
-
-        NotificationManager notificationManager =
+        ///////////EXTRA 1//////////////////////
+        /*NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String CHANNEL_ID = "my_channel_01";
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -259,14 +260,10 @@ public class MainActivity extends GenericActivity {
         //newMeth.setExecutionResultMax("SUCCESS");
         Log.i(TAG,"----Notified----");
         Toast.makeText(getApplicationContext(),"Executed Notification.Builder CLASS ",Toast.LENGTH_LONG).show();
-        Log.i(TAG,"|||||||||||++++++++++++++++++Executed Notification.Builder CLASS++++++++++++++++++|||||||||||");
-
-        /*try {
-            testWriter.writeExecutionResultOfMethodToFile(newMeth,false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.i(TAG,"Failed to write extra classes result to Excel.");
-        }*/
+        Log.i(TAG,"|||||||||||++++++++++++++++++Executed Notification.Builder CLASS++++++++++++++++++|||||||||||");*/
+        ////////////////////////////////////////////////
+        ///////////EXTRA 2//////////////////////
+        ////////////////////////////////////////////////
     }
 
     protected void populateMethodsSpinner()
@@ -415,16 +412,34 @@ public class MainActivity extends GenericActivity {
                 allConstants = myHandler.getAllConstants();
                 populateConstantSpinner();
                 saveConstantsToSharePrefs();
-            } catch (ParserConfigurationException e) {
-                e.printStackTrace();
-            } catch (SAXException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+                saveConstantsToCommonSharePrefs();
+            } catch (ParserConfigurationException | SAXException | IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
+    }
+    private void saveConstantsToCommonSharePrefs() throws Exception {
+        List<String> constantClassesList = new ArrayList<>();
+        String name;
+        for (String constant: allConstants)
+        {
+            try {
+                name = getApplicationContext().getSystemService(getValueFromConstant(constant)).getClass().getName();
+                constantClassesList.add(name);
+            }
+            catch (Exception e)
+            {
+                Log.i(TAG,"Couldn't add class name for constant "+constant+".");
+            }
+        }
+        sharedPref = getSharedPreferences("common",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        //Set the values
+        editor.putStringSet("commonConstantsList",new HashSet<>(constantClassesList));
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
 }

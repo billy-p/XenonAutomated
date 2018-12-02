@@ -1,5 +1,7 @@
 package org.bill.xenonautomated;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +10,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import org.bill.xenonautomated.enums.ValidArguments;
@@ -32,6 +36,7 @@ import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,7 +44,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class RestAndroidClassesActivity extends GenericActivity {
-
+    Switch supportLibSwitch, platformSwitch;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +74,9 @@ public class RestAndroidClassesActivity extends GenericActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
+                Toast.makeText(getApplicationContext(),"----On Nothing Selected----",Toast.LENGTH_LONG).show();
+                //methodsMap = new HashMap<>();
+                //methodsSpinner.setAdapter(new ArrayAdapter<>(getApplicationContext(),R.layout.my_simple_spinner_dropdown_item,new ArrayList<String>()));
             }
         });
         laodConstants = findViewById(R.id.reload_classes);
@@ -150,6 +157,33 @@ public class RestAndroidClassesActivity extends GenericActivity {
                 deleteExcelFile();
             }
         });
+        supportLibSwitch = findViewById(R.id.supportLibSwitch);
+        platformSwitch = findViewById(R.id.platformSwitch);
+        supportLibSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                prograssBar.setVisibility(View.VISIBLE);
+                sharedPref = getSharedPreferences(sharedPrefsName,Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                //Set the values
+                editor.putBoolean("supportLibSwitch", supportLibSwitch.isChecked());
+                editor.commit();
+                loadConstants();
+            }
+        });
+        platformSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                prograssBar.setVisibility(View.VISIBLE);
+                sharedPref = getSharedPreferences(sharedPrefsName,Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                //Set the values
+                editor.putBoolean("platformSwitch", platformSwitch.isChecked());
+                editor.commit();
+                loadConstants();
+            }
+        });
+        loadSwitches();
         //initial load of Classes List
         loadConstants();
         if (hasDonePreviousExecution())
@@ -159,6 +193,26 @@ public class RestAndroidClassesActivity extends GenericActivity {
         }
     }
 
+    private void loadSwitches()
+    {
+        sharedPref = getSharedPreferences(this.sharedPrefsName,Context.MODE_PRIVATE);
+        if (sharedPref.contains("supportLibSwitch")) /*if there is a preference*/
+        {/*these are saved from the last execute-all action of the user*/
+            supportLibSwitch.setChecked(sharedPref.getBoolean("supportLibSwitch",true));
+        }
+        else
+        {
+            supportLibSwitch.setChecked(true);
+        }
+        if (sharedPref.contains("platformSwitch")) /*if there is a preference*/
+        {/*these are saved from the last execute-all action of the user*/
+            platformSwitch.setChecked(sharedPref.getBoolean("platformSwitch",true));
+        }
+        else
+        {
+            platformSwitch.setChecked(true);
+        }
+    }
     protected void populateMethodsSpinner()
     {
         Class classToInvestigate;
@@ -287,9 +341,10 @@ public class RestAndroidClassesActivity extends GenericActivity {
             and saves to Shared prefferances the Constants List*/
     private class GetAdroidRequest extends AsyncTask<String, Void, String>
     {
-
+        List<String> allConstantsPlatform, allConstantsSupportLib;
         @Override
         protected String doInBackground(String... strings) {
+            allConstants = new ArrayList<>();
             String platformPackagesUrl = "https://developer.android.com/reference/classes";
             Log.i("GET_ALL_CONTEXT_CLASSES","Do GET API call to official Android Documentation site.");
             String androidContextUrl = "https://developer.android.com/reference/android/support/packages";
@@ -339,7 +394,9 @@ public class RestAndroidClassesActivity extends GenericActivity {
                 try {
                     saxParser = factory.newSAXParser();
                     saxParser.parse(new InputSource(new StringReader(constantsTable)),classHandler);
-                    allConstants = classHandler.getListOfClasses();
+                    allConstantsSupportLib = new ArrayList<>(classHandler.getListOfClasses());
+                    if (supportLibSwitch.isChecked())
+                        allConstants.addAll(classHandler.getListOfClasses());
                 } catch (ParserConfigurationException e) {
                     e.printStackTrace();
                 } catch (SAXException e) {
@@ -412,15 +469,13 @@ public class RestAndroidClassesActivity extends GenericActivity {
                 // Parse constants table as an xml
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 SAXParser saxParser;
-                ClassHandlerPlatform classHandler = new ClassHandlerPlatform();
+                ClassHandlerPlatform classHandler = new ClassHandlerPlatform(getCommonConstantClassesList());
                 try {
-                    List<String> newList;
                     saxParser = factory.newSAXParser();
                     saxParser.parse(new InputSource(new StringReader(constantsTable)),classHandler);
-                    newList = classHandler.getListOfClasses();
-                    allConstants.addAll(newList);
-                    //list = newList;
-                    //allConstants = newList;
+                    allConstantsPlatform = new ArrayList<>(classHandler.getListOfClasses());
+                    if (platformSwitch.isChecked())
+                        allConstants.addAll(allConstantsPlatform);
                 } catch (ParserConfigurationException e) {
                     e.printStackTrace();
                 } catch (SAXException e) {
@@ -438,7 +493,8 @@ public class RestAndroidClassesActivity extends GenericActivity {
         protected void onPostExecute(String constantsTable) {
             try {
                 populateConstantSpinner();
-                saveConstantsToSharePrefs();
+                //saveConstantsToSharePrefs();
+                saveSeparateListsToSharePrefs(allConstantsSupportLib,allConstantsPlatform);
             } catch (ParserConfigurationException e) {
                 e.printStackTrace();
             } catch (SAXException e) {
@@ -450,5 +506,61 @@ public class RestAndroidClassesActivity extends GenericActivity {
             }
         }
 
+    }
+    private List<String> getCommonConstantClassesList()
+    {
+        List<String> list = new ArrayList<>();
+        sharedPref = getSharedPreferences("common",Context.MODE_PRIVATE);
+        if (sharedPref.contains("commonConstantsList")) /*if there is a preference*/
+        {
+            list.addAll(sharedPref.getStringSet("commonConstantsList",new HashSet<String>()));
+        }
+        return list;
+    }
+    protected void loadConstants()
+    {
+        boolean reloadFromDocumentation = false;
+        sharedPref = getSharedPreferences(this.sharedPrefsName,Context.MODE_PRIVATE);
+        allConstants = new ArrayList<>();
+        if(supportLibSwitch.isChecked())
+        {
+            if (sharedPref.contains("supportLib"))
+            {/*these are saved from the last app launch of the user*/
+                allConstants.addAll(sharedPref.getStringSet("supportLib",new HashSet<String>()));
+            }
+            else
+            {/*No constants are save in shared prefs, so call API to get them*/
+                reloadFromDocumentation = true;
+            }
+        }
+        if(platformSwitch.isChecked())
+        {
+            if (sharedPref.contains("platform"))
+            {/*these are saved from the last app launch of the user*/
+                allConstants.addAll(sharedPref.getStringSet("platform",new HashSet<String>()));
+            }
+            else
+            {/*No constants are save in shared prefs, so call API to get them*/
+                reloadFromDocumentation = true;
+            }
+        }
+        if (reloadFromDocumentation)
+        {
+            prograssBar.setVisibility(View.VISIBLE);
+            documentationRequest();
+        }
+        else
+        {
+            populateConstantSpinner();
+        }
+    }
+    private void saveSeparateListsToSharePrefs(List<String> supportLib,List<String> platform) throws Exception {
+        sharedPref = getSharedPreferences(this.sharedPrefsName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        //Set the values
+        editor.putStringSet("supportLib",new HashSet<>(supportLib));
+        editor.putStringSet("platform",new HashSet<>(platform));
+        if(!editor.commit())
+            throw new Exception("Failed to save key-value to Shared Preferences");
     }
 }

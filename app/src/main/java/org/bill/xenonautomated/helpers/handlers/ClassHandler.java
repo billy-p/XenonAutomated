@@ -21,7 +21,7 @@ public class ClassHandler extends DefaultHandler{
     protected List<String> listOfClasses;
 
 
-    public ClassHandler()
+    ClassHandler()
     {
         super();
         listOfClasses = new ArrayList<>();
@@ -48,15 +48,25 @@ public class ClassHandler extends DefaultHandler{
     }
     protected boolean isSuitable(String className)
     {
+        boolean result = false;
         if (!className.contains(this.suitablePackagePrefix))
             return false;
         Class classToInvestigate = null;
         try {
+            /*if(className.equals("android.support.v4.content.SharedPreferencesCompat.EditorCompat"))
+                Log.i(TAG,"break point here.");*/
             classToInvestigate = Class.forName(className);
-            return !Modifier.isAbstract(classToInvestigate.getModifiers()) && classToInvestigate.getDeclaredMethods().length > 0 && hasValidMethodArray(classToInvestigate);
-        } catch (ClassNotFoundException e) {
+            result = !Modifier.isAbstract(classToInvestigate.getModifiers()) && classToInvestigate.getDeclaredMethods().length > 0 && hasValidMethodArray(classToInvestigate);
+            //return !Modifier.isAbstract(classToInvestigate.getModifiers()) && classToInvestigate.getDeclaredMethods().length > 0 && hasValidMethodArray(classToInvestigate);
+        } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            //Log.i(TAG,"After exception, inside catch.");
+            result = false;
+            //return false;
+        }
+        finally {
+            //Log.i(TAG,"Inside finally, result var: "+result);
+            return result;
         }
     }
 

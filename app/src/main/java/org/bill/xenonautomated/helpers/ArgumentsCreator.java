@@ -15,10 +15,10 @@ import java.util.HashMap;
 
 public class ArgumentsCreator extends HashMap<ValidArguments,MinMaxArhumentCreator>{
 
-    public void initializeArgumentCreator(Context context, Resources resources) {
-        addAllMappings(context,resources);
+    public void initializeArgumentCreator(Context context) {
+        addAllMappings(context);
     }
-    private void addAllMappings(final Context context, final Resources resources)
+    private void addAllMappings(final Context context)
     {
         /* Initialize map */
         this.put(ValidArguments.INT,new MinMaxArhumentCreator(new ArgumentTypes() {
@@ -280,36 +280,36 @@ public class ArgumentsCreator extends HashMap<ValidArguments,MinMaxArhumentCreat
         this.put(ValidArguments.BITMAP,new MinMaxArhumentCreator(new ArgumentTypes() {
             @Override
             public Object getArgumentValue() {
-                return BitmapFactory.decodeResource( resources, R.drawable.spring_oak_large);
+                return BitmapFactory.decodeResource( context.getResources(), R.drawable.spring_oak_medium);
             }
         }, new ArgumentTypes() {
             @Override
             public Object getArgumentValue() {
-                return BitmapFactory.decodeResource( resources, R.drawable.spring_oak_small);
+                return BitmapFactory.decodeResource( context.getResources(), R.drawable.spring_oak_small);
             }
         },new ArgumentTypes() {
             @Override
             public Object getArgumentValue() {
-                return BitmapFactory.decodeResource( resources, R.drawable.spring_oak_small);
+                return BitmapFactory.decodeResource( context.getResources(), R.drawable.spring_oak_small);
             }
         }));
         this.put(ValidArguments.ICON,new MinMaxArhumentCreator(new ArgumentTypes() {
             @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public Object getArgumentValue() {
-                return Icon.createWithResource(context, R.drawable.spring_oak_large);
+                return Icon.createWithResource(context, R.drawable.spring_oak_medium);
             }
         }, new ArgumentTypes() {
             @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public Object getArgumentValue() {
-                return Icon.createWithResource(context, R.drawable.spring_oak_large);
+                return Icon.createWithResource(context, R.drawable.spring_oak_small);
             }
         },new ArgumentTypes() {
             @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public Object getArgumentValue() {
-                return Icon.createWithResource(context, R.drawable.spring_oak_large);
+                return Icon.createWithResource(context, R.drawable.spring_oak_small);
             }
         }));
         this.put(ValidArguments.CONTEXT,new MinMaxArhumentCreator(new ArgumentTypes() {
@@ -345,65 +345,5 @@ public class ArgumentsCreator extends HashMap<ValidArguments,MinMaxArhumentCreat
             }
         }));
     }
-    /*public void addToMap(ValidArguments key, final Object max, final Object min, final Object constructor)
-    {
-        this.put(key,new MinMaxArhumentCreator(new ArgumentTypes() {
-            @Override
-            public Object getArgumentValue() {
-                return max;
-            }
-        }, new ArgumentTypes() {
-            @Override
-            public Object getArgumentValue() {
-                return min;
-            }
-        },new ArgumentTypes() {
-            @Override
-            public Object getArgumentValue() {
-                return constructor;
-            }
-        }));
-    }*/
-    /*public void addToMapBitmap(ValidArguments key, final Resources res)
-    {
-        this.put(key,new MinMaxArhumentCreator(new ArgumentTypes() {
-            @Override
-            public Object getArgumentValue() {
-                return BitmapFactory.decodeResource( res, R.drawable.spring_oak_large);
-            }
-        }, new ArgumentTypes() {
-            @Override
-            public Object getArgumentValue() {
-                return BitmapFactory.decodeResource( res, R.drawable.spring_oak_small);
-            }
-        },new ArgumentTypes() {
-            @Override
-            public Object getArgumentValue() {
-                return BitmapFactory.decodeResource( res, R.drawable.spring_oak_small);
-            }
-        }));
-    }*/
-    /*public void addToMapIcon(ValidArguments key, final Context context)
-    {
-        this.put(key,new MinMaxArhumentCreator(new ArgumentTypes() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
-            @Override
-            public Object getArgumentValue() {
-                return Icon.createWithResource(context, R.drawable.spring_oak_large);
-            }
-        }, new ArgumentTypes() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
-            @Override
-            public Object getArgumentValue() {
-                return Icon.createWithResource(context, R.drawable.spring_oak_large);
-            }
-        },new ArgumentTypes() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
-            @Override
-            public Object getArgumentValue() {
-                return Icon.createWithResource(context, R.drawable.spring_oak_large);
-            }
-        }));
-    }*/
 }
 

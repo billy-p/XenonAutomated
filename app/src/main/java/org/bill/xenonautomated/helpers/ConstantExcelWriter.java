@@ -20,6 +20,7 @@ public class ConstantExcelWriter {
     private static String[] columns = {"Class Name", "Method Name", "Arguments List","Invoke Result Min","Invoke Result Max"};
     private static final String XENON_RESULTS_FILE = "xenon.xlsx";
     private static final String CURRENT_SHEET_NAME = "API_" + String.valueOf(MainActivity.ANDROID_SDK_VERSION);
+    private static final String TAG = "EXCEL_WRITER";
     //new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filename);
     private static ConstantExcelWriter single_instance = null;
 
@@ -44,16 +45,18 @@ public class ConstantExcelWriter {
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), XENON_RESULTS_FILE);
         file.delete();
     }
-    private void insertNewRowAt(int rowNum,Sheet sheet,List<MyMethod> methods)
+    private void insertRowsForMethodListAt(int rowNum,Sheet sheet,List<MyMethod> methods)
     {
+        Row row;
+        String args;
         for (MyMethod method: methods)
         {
             //////INSERT ROW////////////////
-            Row row = sheet.createRow(rowNum);
+            row = sheet.createRow(rowNum);
             row.createCell(0)
                     .setCellValue(method.getClassBelongs());
             row.createCell(1).setCellValue(method.getName());
-            String args = "  (";
+            args = "  (";
             for (String arg: method.getArguments()) {
                 args = args + arg + " , ";
             }
@@ -62,12 +65,13 @@ public class ConstantExcelWriter {
             rowNum++;
         }
     }
-    private void insertNewErrorRowAt(int rowNum,Sheet sheet,List<MyMethod> methods)
+    private void insertNewErrorRowsAt(int rowNum,Sheet sheet,List<MyMethod> methods)
     {
+        Row row;
         for (MyMethod method: methods)
         {
             //////INSERT ROW////////////////
-            Row row = sheet.createRow(rowNum);
+            row = sheet.createRow(rowNum);
             row.createCell(0)
                     .setCellValue(method.getClassBelongs());
             row.createCell(1).setCellValue("ERROR");
@@ -117,12 +121,9 @@ public class ConstantExcelWriter {
                 // Write the output to the file
                 fileOut = new FileOutputStream(file);
                 workbook.write(fileOut);
-            } catch (IOException e) {
+            } catch (IOException | InvalidFormatException e) {
                 e.printStackTrace();
-            } catch (InvalidFormatException e) {
-                e.printStackTrace();
-            }
-            finally {
+            } finally {
                 //close everything
                 if (inputStream != null)
                 {
@@ -161,186 +162,166 @@ public class ConstantExcelWriter {
         }
     }
 
-    public int returnAfterLastRowNumber() throws Exception {
+    public int returnAfterLastRowNumber() throws IOException, InvalidFormatException {
         ////READ ONLY method
         /*Return first Row Num to be used (last used + 1)*/
         Workbook workbook = null;
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), XENON_RESULTS_FILE);
-        InputStream inputStream;
-        if(file.exists() && !file.isDirectory())
-        {
-            inputStream = new FileInputStream(file);
-            workbook = WorkbookFactory.create(inputStream);
-            // Get Sheet
-            Sheet sheet = workbook.getSheet(CURRENT_SHEET_NAME);
-            if (sheet == null)
-                throw new Exception("No record found for that Method definition at excel file.");
-            return sheet.getLastRowNum() + 1;
+        InputStream inputStream = null;
+        try {
+            if(file.exists() && !file.isDirectory())
+            {
+                inputStream = new FileInputStream(file);
+                workbook = WorkbookFactory.create(inputStream);
+                // Get Sheet
+                Sheet sheet = workbook.getSheet(CURRENT_SHEET_NAME);
+                if (sheet == null) {
+                    throw new FileNotFoundException("No record found for that Method definition at excel file.");
+                }
+                return sheet.getLastRowNum() + 1;
+            }
+            else
+            {
+                throw new FileNotFoundException("Not found excel file to save results.");
+            }
         }
-        else
+        catch (Exception e)
         {
-            throw new FileNotFoundException("Not found excel file to save results.");
+            e.printStackTrace();
+            throw e;
+        }
+        finally {
+            if (inputStream != null)
+            {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (workbook != null)
+            {
+                try
+                {
+                    // Closing the workbook
+                    workbook.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
-    public int writeRowToFile(List<MyMethod> methods,boolean error)  {
-        /** Creates the file and writes, or appends to it if it exists, one row.*/
+    private void createHeadersRow(Workbook workbook,Sheet sheet)
+    {
+        ///////HEADERS///////
+        // Create a Font for styling header cells
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 14);
+        headerFont.setColor(IndexedColors.BLUE.getIndex());
+
+        // Create a CellStyle with the font
+        CellStyle headerCellStyle = workbook.createCellStyle();
+        headerCellStyle.setFont(headerFont);
+
+        // Create a Row
+        Row headerRow = sheet.createRow(0);
+
+        // Creating cells
+        for(int i = 0; i < columns.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+            cell.setCellStyle(headerCellStyle);
+        }
+    }
+
+    public int writeMethodsToFile(List<MyMethod> methods,boolean error)
+    {
+        /** Creates the file and writes, or appends to it if it exists, many rows.*/
+        boolean success = true;
         Workbook workbook = null;
         int firstRowInsertedNo = 0;
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), XENON_RESULTS_FILE);
         FileOutputStream fileOut = null;
         InputStream inputStream = null;
-        if(file.exists() && !file.isDirectory()) {
-            ///////////////open to append
-            try {
+        Sheet sheet;
+        ////////////////////testestes/////////////////////////
+        try {
+            if(file.exists() && !file.isDirectory()) {
                 inputStream = new FileInputStream(file);
-                workbook = WorkbookFactory.create(inputStream);
-                //workbook = WorkbookFactory.create()
-
+                if (file.length() == 0)
+                {
+                    Log.i(TAG,"Zero - bytes long file!! Creating new file");
+                    workbook = new XSSFWorkbook();
+                }
+                else
+                {
+                    workbook = WorkbookFactory.create(inputStream);
+                }
                 // Get Sheet
-                Sheet sheet = workbook.getSheet(CURRENT_SHEET_NAME);
+                sheet = workbook.getSheet(CURRENT_SHEET_NAME);
                 if (sheet == null)
                 {//file exist, but sheet for this Android API version doesn't exist. Create and add Headers on top.
                     sheet = workbook.createSheet(CURRENT_SHEET_NAME);
-                    ///////HEADERS///////
-                    // Create a Font for styling header cells
-                    Font headerFont = workbook.createFont();
-                    headerFont.setBold(true);
-                    headerFont.setFontHeightInPoints((short) 14);
-                    headerFont.setColor(IndexedColors.BLUE.getIndex());
-
-                    // Create a CellStyle with the font
-                    CellStyle headerCellStyle = workbook.createCellStyle();
-                    headerCellStyle.setFont(headerFont);
-
-                    // Create a Row
-                    Row headerRow = sheet.createRow(0);
-
-                    // Creating cells
-                    for(int i = 0; i < columns.length; i++) {
-                        Cell cell = headerRow.createCell(i);
-                        cell.setCellValue(columns[i]);
-                        cell.setCellStyle(headerCellStyle);
-                    }
+                    createHeadersRow(workbook,sheet);
                 }
-
-                firstRowInsertedNo = sheet.getLastRowNum() + 1;
-                if (error)
-                    insertNewErrorRowAt(sheet.getLastRowNum() + 1,sheet,methods);
-                else
-                    insertNewRowAt(sheet.getLastRowNum() + 1,sheet,methods);
-
-                // Write the output to the file
-                fileOut = new FileOutputStream(file);
-                workbook.write(fileOut);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InvalidFormatException e) {
-                e.printStackTrace();
             }
-            finally {
-                //close everything
-                if (inputStream != null)
-                {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (fileOut != null)
-                {
-                    try {
-                        fileOut.close();
-                        fileOut.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (workbook != null)
-                {
-                    try
-                    {
-                        // Closing the workbook
-                        workbook.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                return firstRowInsertedNo;
-            }
-        }
-        else
-        {
-            //////////////create file first and then open to write
-            workbook = new XSSFWorkbook();
-            //test
-            try {
-                // Create a Sheet
-                Sheet sheet = workbook.createSheet(CURRENT_SHEET_NAME);
-
-                ///////HEADERS///////
-                // Create a Font for styling header cells
-                Font headerFont = workbook.createFont();
-                headerFont.setBold(true);
-                headerFont.setFontHeightInPoints((short) 14);
-                headerFont.setColor(IndexedColors.BLUE.getIndex());
-
-                // Create a CellStyle with the font
-                CellStyle headerCellStyle = workbook.createCellStyle();
-                headerCellStyle.setFont(headerFont);
-
-                // Create a Row
-                Row headerRow = sheet.createRow(0);
-
-                // Creating cells
-                for(int i = 0; i < columns.length; i++) {
-                    Cell cell = headerRow.createCell(i);
-                    cell.setCellValue(columns[i]);
-                    cell.setCellStyle(headerCellStyle);
-                }
-
-                //////INSERT ROW////////////////
-                firstRowInsertedNo = 1;
-                insertNewRowAt(1,sheet,methods);
-                //////NOT supported in Android! (should format manually)
-                /*// Resize all columns to fit the content size
-                for(int i = 0; i < columns.length; i++) {
-                    sheet.autoSizeColumn(i,true);
-                }*/
-
-                // Write the output to a file
-                fileOut = new FileOutputStream(file);
-                workbook.write(fileOut);
-            }
-            catch (IOException e)
+            else
             {
-                Log.i("WRITE_TO_EXCEL","eXCeption");
+                workbook = new XSSFWorkbook();
+                // Create a Sheet
+                sheet = workbook.createSheet(CURRENT_SHEET_NAME);
+                createHeadersRow(workbook,sheet);
             }
-            finally {
-                //close everything
-                if (fileOut != null)
-                {
-                    try {
-                        fileOut.flush();
-                        fileOut.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+            ////////write methods///////
+            firstRowInsertedNo = sheet.getLastRowNum() + 1;
+            if (error)
+                insertNewErrorRowsAt(firstRowInsertedNo,sheet,methods);
+            else
+                insertRowsForMethodListAt(firstRowInsertedNo,sheet,methods);
 
-                if (workbook != null)
-                {
-                    try
-                    {
-                        // Closing the workbook
-                        workbook.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            // Write the output to the file//
+            fileOut = new FileOutputStream(file);
+            workbook.write(fileOut);
+        } catch (/*IOException | InvalidFormatException | org.apache.poi.EmptyFileException*/ Exception e) {
+            e.printStackTrace();
+            Log.i(TAG,"............eXCeption............");
+            success = false;
+        }
+        finally
+        {
+            //close everything
+            if (inputStream != null)
+            {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                return firstRowInsertedNo;
             }
+            if (fileOut != null)
+            {
+                try {
+                    fileOut.close();
+                    fileOut.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (workbook != null)
+            {
+                try
+                {
+                    // Closing the workbook
+                    workbook.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (!success)
+                throw new RuntimeException("Cannot manipulate Excel file!");
+            return firstRowInsertedNo;
         }
     }
 }

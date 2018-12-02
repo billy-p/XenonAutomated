@@ -18,7 +18,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Reload Classes from Documentation" />
-
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/supportLibSwitch"
+                android:text="Include Android Support Library Classes" />
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/platformSwitch"
+                android:text="Include Android Platform Classes" />
             <Spinner
                 android:id="@+id/classes_drop_down"
                 android:layout_width="wrap_content"

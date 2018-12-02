@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,12 +20,15 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.bill.xenonautomated.dto.ContextConstant;
 import org.bill.xenonautomated.dto.MyMethod;
 import org.bill.xenonautomated.enums.ValidArguments;
 import org.bill.xenonautomated.helpers.ArgumentsCreator;
 import org.bill.xenonautomated.helpers.ConstantExcelWriter;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -73,32 +75,7 @@ public abstract class GenericActivity extends AppCompatActivity {
     protected void initializeArgumentsCreator()
     {
         argsCreator = new ArgumentsCreator();
-        argsCreator.initializeArgumentCreator(getApplicationContext(),getResources());
-        ////set min - max values-to-be-returned hash map
-        //argsCreator = ArgumentsCreator.getInstance();
-        //argsCreator.addToMap(ValidArguments.INT,Integer.MAX_VALUE, Integer.MIN_VALUE,1);
-        //argsCreator.addToMap(ValidArguments.INTEGER,Integer.MAX_VALUE, Integer.MIN_VALUE,1);
-        //argsCreator.addToMap(ValidArguments.RESOURCE_ID,R.drawable.spring_oak_extralarge,R.drawable.spring_oak_small,R.drawable.spring_oak_small);
-        //argsCreator.addToMap(ValidArguments.LONG,Long.MAX_VALUE,Long.MIN_VALUE,112L);
-        //argsCreator.addToMap(ValidArguments.LONG_CLASS,Long.MAX_VALUE,Long.MIN_VALUE,112L);
-        //argsCreator.addToMap(ValidArguments.SHORT,Short.MAX_VALUE,Short.MIN_VALUE,5);
-        //argsCreator.addToMap(ValidArguments.SHORT_CLASS,Short.MAX_VALUE,Short.MIN_VALUE,5);
-        //argsCreator.addToMap(ValidArguments.FLOAT,Float.MAX_VALUE,Float.MIN_VALUE,3.6f);
-        //argsCreator.addToMap(ValidArguments.FLOAT_CLASS,Float.MAX_VALUE,Float.MIN_VALUE,3.6f);
-        //argsCreator.addToMap(ValidArguments.DOUBLE,Double.MAX_VALUE,Double.MIN_VALUE,3.5);
-        //argsCreator.addToMap(ValidArguments.DOUBLE_CLASS,Double.MAX_VALUE,Double.MIN_VALUE,3.5);
-        //argsCreator.addToMap(ValidArguments.BOOLEAN,true,false,true);
-        //argsCreator.addToMap(ValidArguments.BOOLEAN_CLASS,true,false,true);
-        //argsCreator.addToMap(ValidArguments.BYTE,Byte.MAX_VALUE,Byte.MIN_VALUE,0);
-        //argsCreator.addToMap(ValidArguments.CHAR,'\uffff','\u0000','s');
-        //argsCreator.addToMap(ValidArguments.CHAR_SEQUENCE,new String(new char[21474836]).replace("\0", "c"),"b","d");
-        //argsCreator.addToMap(ValidArguments.STRING,new String(new char[21474836]).replace("\0", "c"),"a","d");
-        //argsCreator.addToMapBitmap(ValidArguments.BITMAP,getResources());
-        //argsCreator.addToMapIcon(ValidArguments.ICON,getApplicationContext());
-        //argsCreator.addToMap(ValidArguments.BITMAP, BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_large),BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_small),BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_small));
-        //argsCreator.addToMap(ValidArguments.ICON,BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_large),BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_small),BitmapFactory.decodeResource( getResources(), R.drawable.spring_oak_small));
-        //argsCreator.addToMap(ValidArguments.CONTEXT,getApplicationContext(),getApplicationContext(),getApplicationContext());
-        //////////////////////////
+        argsCreator.initializeArgumentCreator(getApplicationContext());
     }
     protected void resumeExecution()
     {
@@ -107,22 +84,11 @@ public abstract class GenericActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "............********** ALL CLASSES Execution SUCCESS **********............",Toast.LENGTH_LONG).show();
             Log.i(TAG,"............********** ALL CLASSES Execution SUCCESS **********............");
             simpleSuccessAlert("Execution of All Classes completed successfully.");
-        } catch (IllegalAccessException e) {
-            Log.i(TAG,"...........Error: IllegalAccessException...............");
-            Toast.makeText(getApplicationContext(), "Error: IllegalAccessException: " + e.getMessage(),Toast.LENGTH_LONG).show();
+        } catch (/*IllegalAccessException | NoSuchFieldException | ClassNotFoundException |*/ Exception e) {
+            Log.i(TAG,"...........Error: ..............."+ e.getMessage());
+            Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(),Toast.LENGTH_LONG).show();
             e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            Log.i(TAG,"...........Error: NoSuchFieldException...............");
-            Toast.makeText(getApplicationContext(), "Error: NoSuchFieldException: " + e.getMessage(),Toast.LENGTH_LONG).show();
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            Log.i(TAG,"...........Error: ClassNotFoundException...............");
-            Toast.makeText(getApplicationContext(), "Error: ClassNotFoundException: " + e.getMessage(),Toast.LENGTH_LONG).show();
-            e.printStackTrace();
-        } catch (Exception e) {
-            Log.i(TAG,"...........Error: Exception...............");
-            Toast.makeText(getApplicationContext(), "Error: Exception: " + e.getMessage(),Toast.LENGTH_LONG).show();
-            e.printStackTrace();
+            simpleErrorAlert("Aborting Excecution: "+e.getMessage());
         }
     }
     protected void clearSharedPrefs()
@@ -374,7 +340,7 @@ public abstract class GenericActivity extends AppCompatActivity {
         List<MyMethod> tempList = new ArrayList<>();
         MyMethod errorRow = new MyMethod("Error while trying to resolve class: "+exce,null,"ERROR-->CLASS: "+constantForClassTest);
         tempList.add(errorRow);
-        testWriter.writeRowToFile(tempList,true);
+        testWriter.writeMethodsToFile(tempList,true);
     }
     /*Reflection method for testing sdk*/
     protected Object[] minArgumentsList(List<String> argumentTypeList)
@@ -399,7 +365,7 @@ public abstract class GenericActivity extends AppCompatActivity {
         int counter = 0;
         for (String parameter: argumentTypeList)
         {
-            if ( (parameter.equals(ValidArguments.INT.getValue()) || parameter.equals(ValidArguments.INTEGER.getValue()))  && (methodName.toLowerCase().contains("icon") || methodName.toLowerCase().contains("image"))) {
+            if ( (parameter.equals(ValidArguments.INT.getValue()) || parameter.equals(ValidArguments.INTEGER.getValue()))  && (methodName.toLowerCase().contains("icon") || methodName.toLowerCase().contains("image") || methodName.toLowerCase().contains("resource") || methodName.toLowerCase().contains("drawable") )) {
                 methodParameterValues[counter] = argsCreator.get(ValidArguments.RESOURCE_ID).getMaxParameterValue();
             }
             else
@@ -461,21 +427,29 @@ public abstract class GenericActivity extends AppCompatActivity {
         Log.i(TAG,"-----------------Will Execute "+ allMethodsNeeded.size() + " METHODS for Class "+constantForClassTest+"-----------------");
         /////////write whole list of Methods (one row for each Method) of class under investigation at the Excel file:
         /// IF not written yet by the previous execution that failed!!!!!!!!!////
-        int start;
+        int startIndex;
         if (!checkPermission()) {
             requestPermission();
         }
         if (methodListEmptyInitially)
         {
-            start = testWriter.writeRowToFile(methods,false);
+            startIndex = testWriter.writeMethodsToFile(methods,false);
 
         }
-        else
-            start = testWriter.returnAfterLastRowNumber() - methods.size();
+        else {
+            try
+            {
+                startIndex = testWriter.returnAfterLastRowNumber() - methods.size();
+            }
+            catch (FileNotFoundException | org.apache.poi.EmptyFileException ex)
+            {
+                startIndex = testWriter.writeMethodsToFile(methods,false);
+            }
+        }
         for (MyMethod meth: methods)
         {
-            meth.setExcelRowNum(start);
-            start++;
+            meth.setExcelRowNum(startIndex);
+            startIndex++;
         }
         //////////Iterate Methods again, to execute them///////////////
         for(int j = 0; j < allMethodsNeeded.size() ; j++)
@@ -677,29 +651,21 @@ public abstract class GenericActivity extends AppCompatActivity {
             Log.i(TAG,"///////////////////No Class Definition Found for "+constantForClassTest+"///////////////////");
             return;
         }
-        //methods = new ArrayList<>(); updated by the method
         List<Method> allMethodsNeeded;
-        boolean methodListEmptyInitially = emptyMethodsToGo();
-        /////FOR THE WHOLE CLASS: iterate methods to take info////////
         allMethodsNeeded = loadMethodsNotExecutedYet(checkMethods,false);
         Log.i(TAG,"-----------------Will Execute "+ allMethodsNeeded.size() + " METHODS for Class "+constantForClassTest+"-----------------");
         /////////write whole list of Methods (one row for each Method) of class under investigation at the Excel file:
         /// IF not written yet by the previous execution that failed!!!!!!!!!////
-        int start;
+        int startIndex;
         if (!checkPermission()) {
             requestPermission();
         }
-        if (methodListEmptyInitially)
-        {
-            start = testWriter.writeRowToFile(methods,false);
 
-        }
-        else
-            start = testWriter.returnAfterLastRowNumber() - methods.size();
+        startIndex = testWriter.writeMethodsToFile(methods,false);
         for (MyMethod meth: methods)
         {
-            meth.setExcelRowNum(start);
-            start++;
+            meth.setExcelRowNum(startIndex);
+            startIndex++;
         }
         //////////Iterate Methods again, to actually execute them///////////////
         for(int j = 0; j < allMethodsNeeded.size() ; j++)
@@ -872,6 +838,10 @@ public abstract class GenericActivity extends AppCompatActivity {
             //save execution boolean + start
             willDoExecution();
             loadConstantsNotExecutedYet();
+            ///////debugging code///////////////
+            /*constantsRemaining = new ArrayList<>();
+            constantsRemaining.add("android.view.KeyCharacterMap");*/
+            ///////debugging code///////////////
             saveConstantsToGoSharePrefs();
             loadCurrentConstant();
             saveCurrentConstant();
@@ -1035,6 +1005,7 @@ public abstract class GenericActivity extends AppCompatActivity {
 // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
         prograssBar.setVisibility(View.INVISIBLE);
+        Toast.makeText(this,"Total of "+ allConstants.size() +" Classes.",Toast.LENGTH_LONG).show();
     }
     protected abstract void populateMethodsSpinner();
     protected void checkRequestAllPermissions() {
@@ -1198,6 +1169,13 @@ public abstract class GenericActivity extends AppCompatActivity {
         AlertDialog.Builder bld = new AlertDialog.Builder(this);
         bld.setMessage(message);
         bld.setNeutralButton("OK", null);
+        bld.create().show();
+    }
+    protected void simpleErrorAlert(String message) {
+        AlertDialog.Builder bld = new AlertDialog.Builder(this);
+        bld.setMessage(message);
+        bld.setTitle("ERROR");
+        bld.setNegativeButton("OK", null);
         bld.create().show();
     }
     /*protected class of async thread, that makes a GET API call to Android official Documentation
