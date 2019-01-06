@@ -13,8 +13,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
@@ -35,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.net.HttpURLConnection;
@@ -208,6 +212,15 @@ public class MainActivity extends GenericActivity {
         }
         //Request ALL SDK permissions, for target API version >= 23
         checkRequestAllPermissions();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.System.canWrite(this)) {
+            Log.i(TAG, "Should request from user the WRITE_SETTINGS Permission.");
+            Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
+            intent.setData(Uri.parse("package:" + this.getPackageName()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivityForResult(intent, 111);
+        } else {
+            Log.i(TAG, "WRITE_SETTINGS Permission already granted to the app.");
+        }
     }
     protected static Bitmap drawableToBitmap (Drawable drawable) {
 
@@ -263,6 +276,24 @@ public class MainActivity extends GenericActivity {
         Log.i(TAG,"|||||||||||++++++++++++++++++Executed Notification.Builder CLASS++++++++++++++++++|||||||||||");*/
         ////////////////////////////////////////////////
         ///////////EXTRA 2//////////////////////
+        try {
+            Class classTele = Class.forName("android.telephony.TelephonyManager");
+            Object tele = getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+            try {
+                Method meth1 = classTele.getMethod("dial",new Class[]{String.class} );
+                Method meth2 = classTele.getMethod("call",new Class[]{String.class,String.class} );
+                meth1.invoke(tele,new String[]{"cccccccc"});
+                meth2.invoke(tele,new String[]{"cccccccc","b"});
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         ////////////////////////////////////////////////
     }
 
@@ -282,6 +313,12 @@ public class MainActivity extends GenericActivity {
             boolean containsOtherArgTypes;
             for(Method meth: checkMethods)
             {
+                /*/////test//////
+                if(meth.getName().equals("call"))
+                {
+                    Log.i(TAG,"test");
+                }
+                //////////////*/
                 String args = "(";
                 containsOtherArgTypes = false;
 

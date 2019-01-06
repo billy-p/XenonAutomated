@@ -1082,7 +1082,8 @@ public abstract class GenericActivity extends AppCompatActivity {
                 Manifest.permission.WRITE_CALL_LOG,
                 Manifest.permission.WRITE_CONTACTS,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_VOICEMAIL
+                Manifest.permission.WRITE_VOICEMAIL,
+                Manifest.permission.WRITE_SYNC_SETTINGS
         };
         for (String permission: allPermissions)
         {
